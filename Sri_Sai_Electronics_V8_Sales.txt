@@ -1201,7 +1201,24 @@ function getFiltered(){const q=document.getElementById('search').value.trim().to
 function renderProducts(){const data=getFiltered(),grid=document.getElementById('productGrid');document.getElementById('resultCount').textContent=`${data.length} product${data.length===1?'':'s'}`;grid.innerHTML=data.map(p=>`<article class="card"><div class="cardimg"><img src="${p.images[0]}" alt="${esc(p.name)}" loading="lazy" decoding="async" onerror="handleImgError(this)"><span class="tag">${esc(categoryLabels[p.category]||p.category)}</span><span class="pdfbadge">${esc(p.brand||'ESSAE')}</span></div><div class="cardbody"><h3>${esc(p.name)}</h3><div class="desc">${esc(p.shortDesc)}</div><div class="quickspec">${esc((p.specs[0]||''))}${p.specs[1]?'<br>'+esc(p.specs[1]):''}</div><div class="cardactions"><button class="btn pricebtn" onclick="whatsappProduct(${p.id})">WhatsApp / Get Price</button><button class="btn redline" onclick="openProduct(${p.id})">View details</button><button class="btn ghost" onclick="toggleCompare(${p.id})">${compareIds.includes(p.id)?'✓ Added':'Compare'}</button></div></div></article>`).join('')||'<div style="grid-column:1/-1;padding:50px;text-align:center;color:#667085">No matching products. Try another model, capacity or feature.</div>';}
 const SALES_PHONES=['919849013380','919849146480'];
 const SALES_EMAILS=['srisaielectronics@gmail.com','srisai_electronics@yahoo.com'];
-function openSalesWhatsApp(message){SALES_PHONES.forEach(phone=>window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(message),'_blank','noopener'))}
+function openSalesWhatsApp(message){const picker=document.getElementById('whatsappPicker');picker.querySelectorAll('[data-phone-index]').forEach((link,index)=>{link.href='https://wa.me/'+SALES_PHONES[index]+'?text='+encodeURIComponent(message)});picker.showModal()}
+const whatsappPicker=document.createElement('dialog');
+whatsappPicker.id='whatsappPicker';
+whatsappPicker.innerHTML='<h2>Choose a WhatsApp number</h2><p>Open each number and send the enquiry separately.</p><a data-phone-index="0" target="_blank" rel="noopener">WhatsApp 98490 13380</a><a data-phone-index="1" target="_blank" rel="noopener">WhatsApp 98491 46480</a><form method="dialog"><button type="submit">Close</button></form>';
+document.body.append(whatsappPicker);
+const contactPickerStyle=document.createElement('style');
+contactPickerStyle.textContent='#whatsappPicker{width:min(420px,calc(100% - 32px));border:0;border-radius:18px;padding:24px;box-shadow:0 20px 70px #11182755}#whatsappPicker::backdrop{background:#111827aa}#whatsappPicker h2{margin:0 0 8px;font-size:21px}#whatsappPicker p{color:#667085;line-height:1.5}#whatsappPicker a{display:block;margin-top:10px;padding:12px;border-radius:10px;background:#16a34a;color:#fff;text-decoration:none;font-weight:800}#whatsappPicker form{text-align:right;margin-top:12px}#whatsappPicker button{padding:9px 14px;border:0;border-radius:9px;background:#111827;color:white;font-weight:700}.floatcontacts .callfloat{width:auto;height:48px;min-width:48px;padding:0 12px;border-radius:999px;white-space:nowrap;font-size:12px}.modalSalesActions{grid-template-columns:1.2fr 1fr 1fr}@media(max-width:900px){.modalSalesActions{grid-template-columns:1fr}}';
+document.head.append(contactPickerStyle);
+const quickCall=document.querySelector('.salesstrip .callquick[href^="tel:"]');
+const floatingCall=document.querySelector('.floatcontacts .callfloat');
+const modalCall=document.querySelector('.modalSalesActions .callbtn');
+function makeCallLink(phone){const link=document.createElement('a');link.className=phone===SALES_PHONES[0]?'callquick':'callquick';link.href='tel:+'+phone;link.textContent='Call +'+phone.slice(0,2)+' '+phone.slice(2,7)+' '+phone.slice(7);return link}
+if(quickCall){const links=SALES_PHONES.map(makeCallLink);quickCall.replaceWith(...links)}
+if(floatingCall){const links=SALES_PHONES.map(phone=>{const link=makeCallLink(phone);link.className='callfloat';return link});floatingCall.replaceWith(...links)}
+if(modalCall){const links=SALES_PHONES.map(makeCallLink);links.forEach(link=>link.className='btn callbtn');modalCall.replaceWith(...links)}
+document.querySelector('.modalSalesActions')?.classList.add('modalSalesActions');
+const enquiryFormNote=document.querySelector('#leadForm .formnote');
+if(enquiryFormNote)enquiryFormNote.innerHTML='<b>Email notifications:</b> automatic email requires connecting the Google Apps Script webhook. If it is not configured, Send Enquiry will not send email; use the Email both contacts button in the backup options to open a draft and send it from your email app.';
 const emailFallback=document.createElement('a');
 emailFallback.id='emailBoth';
 emailFallback.textContent='Email both contacts';
